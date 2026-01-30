@@ -1,0 +1,55 @@
+#include <iostream>
+#include <print>
+#include <fstream>
+
+template<typename T>
+concept comparable = requires (T a, T b) { { a < b } -> std::convertible_to<bool>; };
+
+template<comparable T>
+constexpr auto find_element(std::unique_ptr<T[]>& arr,int start,int end,T to_be_found) -> std::pair<std::string_view,int> {
+    
+    if (start > end) { /// when only 2 positions remain ,start = end ,then end will end-- when stops
+        return { "No ",end+1 };
+    }
+    else {
+        int m = (start + end) / 2;
+        if (arr[m] == to_be_found) { /// return 1st index if more in sequence
+            while (m > start && arr[m] == arr[m - 1] ) {
+                m--;
+            }
+            return { "Yes ", m  };
+        }
+        else if (arr[m] < to_be_found) {
+            return find_element(arr, m + 1, end, to_be_found);
+        }
+        else {
+            return find_element(arr, start, m-1, to_be_found);
+        }
+    }
+}
+
+int main()
+{
+
+    std::ifstream fin("file.txt");
+
+    int n;
+    fin >> n;
+
+    std::unique_ptr<int[]> arr = std::make_unique<int[]>(n+1);
+
+    for (int i=1; i <= n; ++i)
+        fin >> arr[i];
+
+    int cases;
+    fin >> cases;
+
+    while (cases--) {
+        int to_be_found;
+        fin >> to_be_found;
+
+        auto [first,second] = find_element(arr, 1, n , to_be_found);
+
+        std::print("{}{}\n", first, second);
+    }
+    

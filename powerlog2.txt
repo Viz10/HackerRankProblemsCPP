@@ -1,0 +1,61 @@
+ #include <iostream>
+
+/*
+The compiler sees multiple specializations of the same class template,
+but it doesn’t treat them like overloads.
+Instead, it expects partial specializations,
+and requires on class templates can’t resolve ambiguity the same way as they do in fucntions.
+*/
+
+/// if with ternary op / std conditional_t with bool wrapper /  partial spec.
+
+template <int a, int b> 
+struct power_1 {
+    static constexpr int value = (b%2==1) ? (power_1<a, b / 2>::value * power_1<a, b / 2>::value * a) :
+        (power_1<a, b / 2>::value * power_1<a, b / 2>::value);
+};
+
+template <int a>
+struct power_1<a, 0> {
+    static constexpr int value = 1;
+};
+
+
+template <int a, int b>
+constexpr int power_v_1 = power_1<a, b>::value;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <int a,int b,bool sel=(b%2==0)> /// base , bool calc automatically
+struct power_2 {
+    static_assert(b >= 0, "Exponent must be non-negative");
+};
+
+template <int a>
+struct power_2<a,0,true> {
+    static constexpr int value = 1;
+};
+
+template <int a, int b>
+struct power_2<a, b, false> {
+    static constexpr int value = power_2<a, b / 2>::value * power_2<a, b / 2>::value * a;
+};
+
+
+template <int a, int b>
+struct power_2<a, b, true> {
+    static constexpr int value = power_2<a, b / 2>::value * power_2<a, b / 2>::value;
+};
+
+
+template <int a, int b>
+constexpr int power_v_2 = power_2<a, b>::value;
+
+int main()
+{
+    static_assert(power_v_2<2,2> == 4);
+}
+
+
+
+}
